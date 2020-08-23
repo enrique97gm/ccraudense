@@ -5,6 +5,10 @@ import View from 'ol/View';
 import TileLayer from 'ol/layer/Tile';
 import VectorLayer from 'ol/layer/Vector';
 import XYZ from 'ol/source/XYZ';
+import Feature from 'ol/Feature';
+import {LineString, Point, Polygon} from 'ol/geom';
+import {Fill, Icon, Stroke, Style} from 'ol/style';
+import {TileJSON, Vector as VectorSource} from 'ol/source';
 import { OSM } from 'ol/source';
 import * as Proj from 'ol/proj';
 import {
@@ -17,6 +21,8 @@ export const DEFAULT_WIDTH = '500px';
 
 export const DEFAULT_LAT = -34.603490361131385;
 export const DEFAULT_LON = -58.382037891217465;
+
+declare var ol: any;
 
 @Component({
   selector: 'ol-map',
@@ -32,6 +38,7 @@ export class OlMapComponent implements OnInit, AfterViewInit {
 
   target: string = 'map-' + Math.random().toString(36).substring(2);
   map: Map;
+  marker;
 
   private mapEl: HTMLElement;
 
@@ -40,6 +47,7 @@ export class OlMapComponent implements OnInit, AfterViewInit {
   ngOnInit(): void {}
 
   ngAfterViewInit(): void {
+
     this.mapEl = this.elementRef.nativeElement.querySelector('#' + this.target);
     this.setSize();
 
@@ -48,7 +56,7 @@ export class OlMapComponent implements OnInit, AfterViewInit {
       layers: [
         new TileLayer({
           source: new OSM()
-        })
+        }),
       ],
       view: new View({
         center: Proj.fromLonLat([this.lon, this.lat]),
@@ -56,6 +64,23 @@ export class OlMapComponent implements OnInit, AfterViewInit {
       }),
       controls: defaultControls({attribution: false, zoom: false}).extend([])
     });
+
+    this.marker = new Feature({
+      geometry: new Point(Proj.fromLonLat([this.lon, this.lat])),
+    });
+  
+    var markers = new VectorSource({
+        features: [this.marker]
+    });
+    
+    var markerVectorLayer = new VectorLayer({
+        source: markers,
+    });
+
+    this.map.addLayer(markerVectorLayer);
+
+    console.log(this.marker)
+
   }
 
   private setSize() {
